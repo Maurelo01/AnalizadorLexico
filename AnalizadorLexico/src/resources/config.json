@@ -1,0 +1,21 @@
+{
+  "palabrasReservadas": ["if", "else", "while", "for", "return"],
+  "operadores": ["+", "-", "*", "/", "=", "==", "!=", "<", ">", "<=", ">="],
+  "agrupacion": ["(", ")", "{", "}", "[", "]"],
+  "puntuacion": [",", ";", ":"],
+  "comentarioLinea": "//",
+  "comentarioBloqueInicio": "/*",
+  "comentarioBloqueFin": "*/",
+  "colores": {
+    "RESERVADA": "#0000FF",
+    "IDENTIFICADOR": "#8B4513",
+    "NUMERO": "#FF00FF",
+    "DECIMAL": "#000000",
+    "CADENA": "#008000",
+    "OPERADOR": "#DC143C",
+    "AGRUPACION": "#FF8C00",
+    "PUNTUACION": "#800080",
+    "COMENTARIO": "#006400",
+    "ERROR": "#FF0000"
+  }
+}
