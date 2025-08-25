@@ -300,7 +300,7 @@ public class DialogoConfig extends javax.swing.JDialog
         tabColores = new javax.swing.JPanel();
         jScrollPane6 = new javax.swing.JScrollPane();
         tablaColores = new javax.swing.JTable();
-        jPanel5 = new javax.swing.JPanel();
+        panelBotonesPrincipales = new javax.swing.JPanel();
         btnGuardar = new javax.swing.JButton();
         btnRestablecer = new javax.swing.JButton();
         btnCerrar = new javax.swing.JButton();
@@ -523,20 +523,20 @@ public class DialogoConfig extends javax.swing.JDialog
 
         tabColores.add(jScrollPane6, java.awt.BorderLayout.CENTER);
 
-        btnGuardar.setText("Guardar");
-        jPanel5.add(btnGuardar);
-
-        btnRestablecer.setText("Restablecer");
-        jPanel5.add(btnRestablecer);
-
-        btnCerrar.setText("Cerrar");
-        jPanel5.add(btnCerrar);
-
-        tabColores.add(jPanel5, java.awt.BorderLayout.PAGE_END);
-
         tabsConfig.addTab("Colores", tabColores);
 
         getContentPane().add(tabsConfig, java.awt.BorderLayout.CENTER);
+
+        btnGuardar.setText("Guardar");
+        panelBotonesPrincipales.add(btnGuardar);
+
+        btnRestablecer.setText("Restablecer");
+        panelBotonesPrincipales.add(btnRestablecer);
+
+        btnCerrar.setText("Cerrar");
+        panelBotonesPrincipales.add(btnCerrar);
+
+        getContentPane().add(panelBotonesPrincipales, java.awt.BorderLayout.SOUTH);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -569,7 +569,6 @@ public class DialogoConfig extends javax.swing.JDialog
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -583,6 +582,7 @@ public class DialogoConfig extends javax.swing.JDialog
     private javax.swing.JList<String> listaOperadores;
     private javax.swing.JList<String> listaPuntuacion;
     private javax.swing.JList<String> listaReservadas;
+    private javax.swing.JPanel panelBotonesPrincipales;
     private javax.swing.JPanel tabAgrupacion;
     private javax.swing.JPanel tabColores;
     private javax.swing.JPanel tabComentarios;

@@ -133,6 +133,7 @@ public class EditorPrincipal extends javax.swing.JFrame
         itemGuardar = new javax.swing.JMenuItem();
         menuHerramientas = new javax.swing.JMenu();
         itemBusqueda = new javax.swing.JMenuItem();
+        itemAnalizadorLexico = new javax.swing.JMenuItem();
         menuConfig = new javax.swing.JMenu();
         itemEditarConfig = new javax.swing.JMenuItem();
 
@@ -172,6 +173,15 @@ public class EditorPrincipal extends javax.swing.JFrame
         itemBusqueda.setText("Busqueda de patrones");
         menuHerramientas.add(itemBusqueda);
 
+        itemAnalizadorLexico.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_DOWN_MASK));
+        itemAnalizadorLexico.setText("Analizador léxico");
+        itemAnalizadorLexico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                itemAnalizadorLexicoActionPerformed(evt);
+            }
+        });
+        menuHerramientas.add(itemAnalizadorLexico);
+
         barraMenu.add(menuHerramientas);
 
         menuConfig.setText("Configuracion");
@@ -204,35 +214,31 @@ public class EditorPrincipal extends javax.swing.JFrame
         }
     }//GEN-LAST:event_itemAbrirActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
+    private void itemAnalizadorLexicoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_itemAnalizadorLexicoActionPerformed
+        try 
+        {
+            if (configuracion == null) // Asegura que la configuración este cargada
+            {
+                com.mycompany.analizadorlexico.configuracion.ConfiguracionES.asegurarArchivoConfiguracion();
+                configuracion = com.mycompany.analizadorlexico.configuracion.ConfiguracionES.cargar();
             }
-        } catch (ReflectiveOperationException | javax.swing.UnsupportedLookAndFeelException ex) {
-            logger.log(java.util.logging.Level.SEVERE, null, ex);
+            com.mycompany.analizadorlexico.analisis.AnalizadorLexico analizador =new com.mycompany.analizadorlexico.analisis.AnalizadorLexico(); // Ejecuta el analizador léxico
+            com.mycompany.analizadorlexico.analisis.ResultadoAnalisis resultado = analizador.analizar(areaEditor.getText(), configuracion);
+            com.mycompany.analizadorlexico.ui.DialogoResultadoAnalisis dialogo = new com.mycompany.analizadorlexico.ui.DialogoResultadoAnalisis(this, true);
+            dialogo.cargarResultadoAnalisis(resultado); dialogo.setLocationRelativeTo(this); dialogo.setVisible(true);
+        } 
+        catch (Exception excepcion) 
+        {
+            excepcion.printStackTrace();
+            javax.swing.JOptionPane.showMessageDialog(this, "No se pudo ejecutar el análisis: " + excepcion.getMessage(), "Error", javax.swing.JOptionPane.ERROR_MESSAGE);
         }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(() -> new EditorPrincipal().setVisible(true));
-    }
+    }//GEN-LAST:event_itemAnalizadorLexicoActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextPane areaEditor;
     private javax.swing.JMenuBar barraMenu;
     private javax.swing.JMenuItem itemAbrir;
+    private javax.swing.JMenuItem itemAnalizadorLexico;
     private javax.swing.JMenuItem itemBusqueda;
     private javax.swing.JMenuItem itemEditarConfig;
     private javax.swing.JMenuItem itemGuardar;

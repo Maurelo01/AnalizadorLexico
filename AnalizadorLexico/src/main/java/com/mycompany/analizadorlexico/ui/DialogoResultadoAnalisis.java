@@ -1,0 +1,203 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JDialog.java to edit this template
+ */
+package com.mycompany.analizadorlexico.ui;
+
+import com.mycompany.analizadorlexico.analisis.ResultadoAnalisis;
+import com.mycompany.analizadorlexico.analisis.Token;
+import javax.swing.table.DefaultTableModel;
+
+public class DialogoResultadoAnalisis extends javax.swing.JDialog {
+    
+    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DialogoResultadoAnalisis.class.getName());
+    private ResultadoAnalisis resultadoActual;
+    
+    public DialogoResultadoAnalisis(java.awt.Frame parent, boolean modal)
+    {
+        super(parent, modal);
+        initComponents();
+        configurarTablas();
+        actualizarResumen(0, 0);
+    }
+    
+    public DialogoResultadoAnalisis(java.awt.Frame parent, ResultadoAnalisis resultado)
+    {
+        super(parent, true);
+        initComponents();
+        configurarTablas();
+        cargarResultadoAnalisis(resultado);
+    }
+    
+    private void configurarTablas() 
+    {
+        DefaultTableModel modeloTokens = new DefaultTableModel(new Object[]{"#", "Tipo", "Lexema", "Fila", "Columna inicio", "Columna fin"}, 0)  // Modelo vacio inicial para tokens
+        {
+            @Override
+            public boolean isCellEditable(int fila, int columna) 
+            { 
+                return false; 
+            }        
+        };
+        tablaTokens.setModel(modeloTokens);
+        tablaTokens.setAutoCreateRowSorter(true);
+        tablaTokens.setRowSelectionAllowed(true);
+        tablaTokens.setColumnSelectionAllowed(false);
+        tablaTokens.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+
+        DefaultTableModel modeloErrores = new DefaultTableModel(new Object[]{"#", "Tipo", "Lexema", "Fila", "Columna inicio", "Columna fin"}, 0) // Modelo vacio inicial para errores
+        {
+            @Override public boolean isCellEditable(int fila, int columna) { return false; }
+        };
+        tablaErrores.setModel(modeloErrores);
+        tablaErrores.setAutoCreateRowSorter(true);
+        tablaErrores.setRowSelectionAllowed(true);
+        tablaErrores.setColumnSelectionAllowed(false);
+        tablaErrores.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+    }
+    
+    public void cargarResultadoAnalisis(ResultadoAnalisis resultado) 
+    {
+        if (resultado == null) 
+        {
+            limpiarTablas();
+            actualizarResumen(0, 0);
+            return;
+        }
+        this.resultadoActual = resultado;
+        DefaultTableModel modeloTokens = (DefaultTableModel) tablaTokens.getModel();
+        DefaultTableModel modeloErrores = (DefaultTableModel) tablaErrores.getModel();
+        modeloTokens.setRowCount(0);
+        modeloErrores.setRowCount(0);
+        
+        java.util.List<Token> listaTokens = resultado.getTokens(); // Llenar tokens
+        for (int indice = 0; indice < listaTokens.size(); indice++) 
+        {
+            Token token = listaTokens.get(indice);
+            modeloTokens.addRow(new Object[]
+            {
+                    indice + 1,
+                    token.getTipo(),
+                    token.getLexema(),
+                    token.getFila(),
+                    token.getColumnaInicio(),
+                    token.getColumnaFin()
+            });
+        }
+        java.util.List<Token> listaErrores = resultado.getErrores(); // Llenar errores
+        for (int indice = 0; indice < listaErrores.size(); indice++) 
+        {
+            Token tokenError = listaErrores.get(indice);
+            modeloErrores.addRow(new Object[]
+            {
+                indice + 1,
+                tokenError.getTipo(),
+                tokenError.getLexema(),
+                tokenError.getFila(),
+                tokenError.getColumnaInicio(),
+                tokenError.getColumnaFin()
+            });
+        }
+        actualizarResumen(listaTokens.size(), listaErrores.size());// Ir por defecto a la pestaña de Errores si hay alguno
+        if (!listaErrores.isEmpty()) {
+            tabResultado.setSelectedIndex(1); // 0=Tokens, 1=Errores
+        } else {
+            tabResultado.setSelectedIndex(0);
+        }
+    }
+    
+    private void limpiarTablas() 
+    {
+        ((DefaultTableModel) tablaTokens.getModel()).setRowCount(0);
+        ((DefaultTableModel) tablaErrores.getModel()).setRowCount(0);
+    }
+
+    private void actualizarResumen(int cantidadTokens, int cantidadErrores) 
+    {
+        lblResumen.setText("Tokens: " + cantidadTokens + "   |   Errores: " + cantidadErrores);
+    }
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        tabResultado = new javax.swing.JTabbedPane();
+        panelTokens = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tablaTokens = new javax.swing.JTable();
+        panelErrores = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tablaErrores = new javax.swing.JTable();
+        jPanel1 = new javax.swing.JPanel();
+        lblResumen = new javax.swing.JLabel();
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Resultado del Análisis Léxico");
+        setModal(true);
+
+        panelTokens.setLayout(new java.awt.BorderLayout());
+
+        tablaTokens.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(tablaTokens);
+
+        panelTokens.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        tabResultado.addTab("Tokens", panelTokens);
+
+        panelErrores.setLayout(new java.awt.BorderLayout());
+
+        tablaErrores.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(tablaErrores);
+
+        panelErrores.add(jScrollPane2, java.awt.BorderLayout.CENTER);
+
+        tabResultado.addTab("Errores", panelErrores);
+
+        getContentPane().add(tabResultado, java.awt.BorderLayout.CENTER);
+
+        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        lblResumen.setText("Tokens: 0 | Errores: 0 ");
+        jPanel1.add(lblResumen);
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.SOUTH);
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JLabel lblResumen;
+    private javax.swing.JPanel panelErrores;
+    private javax.swing.JPanel panelTokens;
+    private javax.swing.JTabbedPane tabResultado;
+    private javax.swing.JTable tablaErrores;
+    private javax.swing.JTable tablaTokens;
+    // End of variables declaration//GEN-END:variables
+}
