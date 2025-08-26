@@ -22,7 +22,7 @@ public class ConfiguracionES
       "palabrasReservadas": ["if", "else", "while", "for", "return"],
       "operadores": ["+", "-", "*", "/", "=", "==", "!=", "<", ">", "<=", ">="],
       "agrupacion": ["(", ")", "{", "}", "[", "]"],
-      "puntuacion": [",", ";", ":"],
+      "puntuacion": [",", ";", ":", "."],
       "comentarioLinea": "//",
       "comentarioBloqueInicio": "/*",
       "comentarioBloqueFin": "*/",
