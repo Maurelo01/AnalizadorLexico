@@ -171,13 +171,26 @@ public class AnalizadorLexico
             {
                 int indiceInicio = indiceActual;
                 int columnaInicio = columnaActual;
-
+                
                 while (indiceActual < arregloCaracteres.length && esDigito(arregloCaracteres[indiceActual])) // Enteros 
                 {
                     indiceActual++;
                     columnaActual++;
                 }
-
+                // Si despues hay letras, guion o numero juntos
+                if (indiceActual < arregloCaracteres.length && (esLetra(arregloCaracteres[indiceActual]) || arregloCaracteres[indiceActual] == '_'))
+                {
+                    while (indiceActual < arregloCaracteres.length && esLetraDigitoGuion(arregloCaracteres[indiceActual])) 
+                    {
+                        indiceActual++;
+                        columnaActual++;
+                    }
+                    
+                    String lexema = extraer(arregloCaracteres, indiceInicio, indiceActual);
+                    resultado.agregarToken(new Token(TipoToken.IDENTIFICADOR, lexema, filaActual, columnaInicio, columnaActual - 1));
+                    continue;
+                }
+                
                 boolean tienePuntoDecimal = false; // Decimales
                 int cantidadDigitosDecimales = 0;
                 if (indiceActual < arregloCaracteres.length && arregloCaracteres[indiceActual] == '.') 
@@ -196,15 +209,15 @@ public class AnalizadorLexico
                 String lexema = extraer(arregloCaracteres, indiceInicio, indiceActual);
                 if (tienePuntoDecimal && cantidadDigitosDecimales == 0) 
                 {
-                    resultado.agregarError(new Token(TipoToken.ERROR, lexema, filaActual, columnaInicio, Math.max(columnaActual - 1, columnaInicio)));
+                    resultado.agregarError(new Token(TipoToken.ERROR, lexema, filaActual, columnaInicio, columnaActual - 1));
                 } 
                 else if (tienePuntoDecimal) 
                 {
-                    resultado.agregarToken(new Token(TipoToken.DECIMAL, lexema, filaActual, columnaInicio, Math.max(columnaActual - 1, columnaInicio)));
+                    resultado.agregarToken(new Token(TipoToken.DECIMAL, lexema, filaActual, columnaInicio, columnaActual - 1));
                 } 
                 else 
                 {
-                    resultado.agregarToken(new Token(TipoToken.NUMERO, lexema, filaActual, columnaInicio, Math.max(columnaActual - 1, columnaInicio)));
+                    resultado.agregarToken(new Token(TipoToken.NUMERO, lexema, filaActual, columnaInicio, columnaActual - 1));
                 }
                 continue;
             }
@@ -276,6 +289,11 @@ public class AnalizadorLexico
             if (origen[indiceDesde + indicePatron] != patron.charAt(indicePatron)) return false;
         }
         return true;
+    }
+    
+    private static boolean esLetraDigitoGuion(char caracter) 
+    {
+        return esLetra(caracter) || esDigito(caracter) || caracter == '_';
     }
     
     private static String extraer(char[] origen, int indiceDesde, int indiceHastaExclusivo) 

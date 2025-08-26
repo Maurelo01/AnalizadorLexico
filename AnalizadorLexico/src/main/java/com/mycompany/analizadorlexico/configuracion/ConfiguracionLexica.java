@@ -80,7 +80,7 @@ public class ConfiguracionLexica
     
     public String getComentarioBloqueFin()
     {
-        return comentarioBloqueInicio;
+        return comentarioBloqueFin;
     }
     
     public void setComentarioBloqueFin(String comentarioBloqueFin)
