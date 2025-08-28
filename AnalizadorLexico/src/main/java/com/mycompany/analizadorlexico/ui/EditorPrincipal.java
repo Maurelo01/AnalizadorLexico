@@ -4,7 +4,10 @@
  */
 package com.mycompany.analizadorlexico.ui;
 
+import com.mycompany.analizadorlexico.analisis.AnalizadorLexico;
+import com.mycompany.analizadorlexico.analisis.ResultadoAnalisis;
 import com.mycompany.analizadorlexico.analisis.TipoToken;
+import com.mycompany.analizadorlexico.analisis.Token;
 import com.mycompany.analizadorlexico.configuracion.ConfiguracionES;
 import com.mycompany.analizadorlexico.configuracion.ConfiguracionLexica;
 import com.mycompany.analizadorlexico.io.Archivos;
@@ -14,11 +17,13 @@ import java.awt.Font;
 import java.util.EnumMap;
 import java.util.Map;
 import javax.swing.JOptionPane;
+import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 
 public class EditorPrincipal extends javax.swing.JFrame 
 {
@@ -28,6 +33,8 @@ public class EditorPrincipal extends javax.swing.JFrame
     private ConfiguracionES configES;  
     private SimpleAttributeSet estiloPorDefecto;
     private Map<TipoToken, AttributeSet> mapaEstilosPorTipo;
+    private boolean coloreadoActivo = true;
+    private Timer temporizadorColoreado;         
     
     public EditorPrincipal() 
     {
@@ -50,6 +57,8 @@ public class EditorPrincipal extends javax.swing.JFrame
             ConfiguracionES.asegurarArchivoConfiguracion(); // Crea carpeta y archivo si no existen y escribe el JSON por defecto
             configuracion = ConfiguracionES.cargar(); // Carga el JSON a objeto
             crearMapaEstilosDesdeConfiguracion(); // Activa la cargar de colores
+            inicializarColoreado(); 
+            aplicarColoreadoDesdeTexto(); // Se aplican los colores
         } 
         catch (Exception ex) 
         {
@@ -118,10 +127,13 @@ public class EditorPrincipal extends javax.swing.JFrame
         {
             ConfiguracionES.guardar(configuracion);
             configuracion = ConfiguracionES.cargar();
+            crearMapaEstilosDesdeConfiguracion();
+            aplicarColoreadoDesdeTexto();    
         } 
         catch (Exception ex) 
         {
             logger.log(java.util.logging.Level.WARNING, "No se pudo guardar/recargar config tras diálogo", ex);
+            JOptionPane.showMessageDialog(this, "No se pudo recargar la configuracion: " + ex.getMessage(), "Advertencia", JOptionPane.WARNING_MESSAGE);
         }
     }
     
@@ -166,6 +178,115 @@ public class EditorPrincipal extends javax.swing.JFrame
         SimpleAttributeSet estilo = new SimpleAttributeSet();
         StyleConstants.setForeground(estilo, color != null ? color : Color.BLACK);
         return estilo;
+    }
+    
+    private void inicializarColoreado()
+    {
+        if (mapaEstilosPorTipo == null || estiloPorDefecto == null) 
+        {   
+            crearMapaEstilosDesdeConfiguracion();
+        }
+        
+        temporizadorColoreado = new Timer(10, evento -> aplicarColoreadoDesdeTexto()); // Temporizador para inactividad
+        temporizadorColoreado.setRepeats(false);
+
+        StyledDocument documento = (StyledDocument) areaEditor.getDocument(); // si hay cambios actualiza
+        documento.addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { reprogramarColoreado(); }
+            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { reprogramarColoreado(); }
+            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { reprogramarColoreado(); }
+        });    
+    }
+    
+    private void reprogramarColoreado() 
+    {
+        if (!coloreadoActivo) return;
+        if (temporizadorColoreado != null) temporizadorColoreado.restart();
+    }
+    
+    private void aplicarColoreadoDesdeTexto() 
+    {
+        if (!coloreadoActivo) return;
+        String textoActual = areaEditor.getText();
+        StyledDocument documento = (StyledDocument) areaEditor.getDocument();
+
+        // 1) Ejecutar el analizador léxico con la configuración actual
+        AnalizadorLexico analizador = new AnalizadorLexico();
+        ResultadoAnalisis resultado = analizador.analizar(textoActual, configuracion);
+
+        // 2) Resetear todo el documento al estilo por defecto
+        documento.setCharacterAttributes(0, textoActual.length(), estiloPorDefecto, true);
+
+        // 3) Precalcular los offsets de inicio de cada línea (línea 1 → índice 0)
+        int[] offsetPorLinea = construirDesplazamientoPorLinea(textoActual);
+        for (int indice = 0; indice < resultado.getTokens().size(); indice++) // Aplicar estilos para tokens
+        {
+            Token token = resultado.getTokens().get(indice);
+            aplicarEstiloDeToken(documento, token, offsetPorLinea);
+        }
+        for (int indice = 0; indice < resultado.getErrores().size(); indice++) //Aplicar estilos para errores 
+        {
+            Token tokenError = resultado.getErrores().get(indice);
+            aplicarEstiloDeToken(documento, tokenError, offsetPorLinea);
+        }
+    }
+    
+    private int[] construirDesplazamientoPorLinea(String texto) 
+    {
+        java.util.List<Integer> listaDesplazamineto = new java.util.ArrayList<>();
+        listaDesplazamineto.add(0); 
+        for (int indice = 0; indice < texto.length(); indice++) 
+        {
+            char caracter = texto.charAt(indice);
+            if (caracter == '\n') 
+            {
+                listaDesplazamineto.add(indice + 1);
+            } 
+            else if (caracter == '\r') 
+            {
+                if (indice + 1 < texto.length() && texto.charAt(indice + 1) == '\n') 
+                {
+                    indice++; // saltar el \n también
+                }
+                listaDesplazamineto.add(indice + 1);
+            }
+        }
+        int[] arregloDesplazmiento = new int[listaDesplazamineto.size()];
+        for (int indice = 0; indice < arregloDesplazmiento.length; indice++) 
+        {
+            arregloDesplazmiento[indice] = listaDesplazamineto.get(indice);
+        }
+        return arregloDesplazmiento;
+    }
+    
+    private int calcularDesplazamiento(int[] deplazamiento, int fila, int columna) 
+    {
+        int indiceLinea = fila - 1;
+        if (indiceLinea < 0 || indiceLinea >= deplazamiento.length) return -1;
+        return deplazamiento[indiceLinea] + (columna - 1);
+    }
+    
+    private void aplicarEstiloDeToken(StyledDocument documento, Token token, int[] desplazamiento) 
+    {
+        TipoToken tipo = token.getTipo();
+        AttributeSet estilo = mapaEstilosPorTipo.getOrDefault(tipo, estiloPorDefecto);
+
+        int fila = token.getFila();
+        int columnaInicio = token.getColumnaInicio();
+        int columnaFin = token.getColumnaFin();
+        int longitud = Math.max(0, columnaFin - columnaInicio + 1);
+
+        int desplazamientoInicio = calcularDesplazamiento(desplazamiento, fila, columnaInicio);
+        if (desplazamientoInicio < 0) return;
+
+        int longitudSegura = Math.min(longitud, Math.max(0, documento.getLength() - desplazamientoInicio));
+        if (longitudSegura <= 0) return;
+
+        try 
+        {
+            documento.setCharacterAttributes(desplazamientoInicio, longitudSegura, estilo, true);
+        } 
+        catch (Exception ex){}
     }
 
     /**
@@ -259,6 +380,7 @@ public class EditorPrincipal extends javax.swing.JFrame
             {
                 areaEditor.setText(texto);
                 areaEditor.setCaretPosition(0);
+                aplicarColoreadoDesdeTexto();
             }
         } 
         catch (Exception ex) 

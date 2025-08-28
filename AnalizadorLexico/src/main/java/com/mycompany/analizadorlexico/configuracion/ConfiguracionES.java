@@ -27,14 +27,14 @@ public class ConfiguracionES
       "comentarioBloqueInicio": "/*",
       "comentarioBloqueFin": "*/",
       "colores": {
-        "RESERVADA": "#0000FF",
-        "IDENTIFICADOR": "#8B4513",
-        "NUMERO": "#FF00FF",
+        "RESERVADA": "#325FA9",
+        "IDENTIFICADOR": "#5A3E2D",
+        "NUMERO": "#8AC850",
         "DECIMAL": "#000000",
-        "CADENA": "#008000",
-        "OPERADOR": "#DC143C",
-        "AGRUPACION": "#FF8C00",
-        "PUNTUACION": "#800080",
+        "CADENA": "#FFA800",
+        "OPERADOR": "#FFDE21",
+        "AGRUPACION": "#6E3D6F",
+        "PUNTUACION": "#DC143C",
         "COMENTARIO": "#006400",
         "ERROR": "#FF0000"
       }
