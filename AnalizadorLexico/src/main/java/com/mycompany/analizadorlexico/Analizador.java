@@ -6,9 +6,9 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
-public class AnalizadorLexico 
+public class Analizador 
 {
-    private AnalizadorLexico() {}
+    private Analizador() {}
     
     public static void main(String[] args) 
     {
