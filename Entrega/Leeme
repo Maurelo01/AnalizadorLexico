@@ -1,0 +1,8 @@
+Requisitos mínimos
+Java JDK 21
+Maven 3.9+
+
+Ejecutar con java -jar target/Analizador-1.0-SNAPSHOT-shaded.jar en la terminal
+
+Repositorio Github:
+https://github.com/Maurelo01/AnalizadorLexico.git
