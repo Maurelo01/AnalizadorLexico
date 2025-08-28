@@ -41,7 +41,8 @@ public class ConfiguracionES
     }
     """;   
     
-    public static void asegurarArchivoConfiguracion() throws IOException {
+    public static void asegurarArchivoConfiguracion() throws IOException 
+    {
         Path dir = RUTA_POR_DEFECTO.getParent();
         if (dir != null && !Files.exists(dir)) 
         {

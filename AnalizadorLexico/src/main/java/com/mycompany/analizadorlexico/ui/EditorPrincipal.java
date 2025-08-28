@@ -4,13 +4,21 @@
  */
 package com.mycompany.analizadorlexico.ui;
 
+import com.mycompany.analizadorlexico.analisis.TipoToken;
 import com.mycompany.analizadorlexico.configuracion.ConfiguracionES;
 import com.mycompany.analizadorlexico.configuracion.ConfiguracionLexica;
 import com.mycompany.analizadorlexico.io.Archivos;
+import com.mycompany.analizadorlexico.util.Colores;
+import java.awt.Color;
 import java.awt.Font;
+import java.util.EnumMap;
+import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
 
 public class EditorPrincipal extends javax.swing.JFrame 
 {
@@ -18,6 +26,8 @@ public class EditorPrincipal extends javax.swing.JFrame
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(EditorPrincipal.class.getName());
     private ConfiguracionLexica configuracion;  
     private ConfiguracionES configES;  
+    private SimpleAttributeSet estiloPorDefecto;
+    private Map<TipoToken, AttributeSet> mapaEstilosPorTipo;
     
     public EditorPrincipal() 
     {
@@ -39,6 +49,7 @@ public class EditorPrincipal extends javax.swing.JFrame
         {
             ConfiguracionES.asegurarArchivoConfiguracion(); // Crea carpeta y archivo si no existen y escribe el JSON por defecto
             configuracion = ConfiguracionES.cargar(); // Carga el JSON a objeto
+            crearMapaEstilosDesdeConfiguracion(); // Activa la cargar de colores
         } 
         catch (Exception ex) 
         {
@@ -112,6 +123,49 @@ public class EditorPrincipal extends javax.swing.JFrame
         {
             logger.log(java.util.logging.Level.WARNING, "No se pudo guardar/recargar config tras diálogo", ex);
         }
+    }
+    
+    private void crearMapaEstilosDesdeConfiguracion()
+    {
+        // Estilo por defecto (todo negro xd)
+        estiloPorDefecto = new SimpleAttributeSet();
+        StyleConstants.setForeground(estiloPorDefecto, Color.BLACK);
+        StyleConstants.setBold(estiloPorDefecto, false);
+        StyleConstants.setItalic(estiloPorDefecto, false);
+        
+        // Mapa por tipo de token
+        mapaEstilosPorTipo = new EnumMap<>(TipoToken.class);
+        
+        // Colores desde el config
+        Map<String, String> colores = (configuracion != null && configuracion.getColores() != null) ? configuracion.getColores() : java.util.Map.of();
+        Color colorReservada = Colores.convertirHexAColor(colores.getOrDefault("RESERVADA", "#0000FF"));
+        Color colorIdentificador = Colores.convertirHexAColor(colores.getOrDefault("IDENTIFICADOR", "#8B4513"));
+        Color colorNumero = Colores.convertirHexAColor(colores.getOrDefault("NUMERO", "#FF00FF"));
+        Color colorDecimal = Colores.convertirHexAColor(colores.getOrDefault("DECIMAL", "#000000"));
+        Color colorCadena = Colores.convertirHexAColor(colores.getOrDefault("CADENA", "#008000"));
+        Color colorOperador = Colores.convertirHexAColor(colores.getOrDefault("OPERADOR", "#DC143C"));
+        Color colorAgrupacion = Colores.convertirHexAColor(colores.getOrDefault("AGRUPACION", "#FF8C00"));
+        Color colorPuntuacion = Colores.convertirHexAColor(colores.getOrDefault("PUNTUACION", "#800080"));
+        Color colorComentario = Colores.convertirHexAColor(colores.getOrDefault("COMENTARIO", "#006400"));
+        Color colorError = Colores.convertirHexAColor(colores.getOrDefault("ERROR", "#FF0000"));
+        
+        mapaEstilosPorTipo.put(TipoToken.RESERVADA, crearEstilo(colorReservada));
+        mapaEstilosPorTipo.put(TipoToken.IDENTIFICADOR, crearEstilo(colorIdentificador));
+        mapaEstilosPorTipo.put(TipoToken.NUMERO, crearEstilo(colorNumero));
+        mapaEstilosPorTipo.put(TipoToken.DECIMAL, crearEstilo(colorDecimal));
+        mapaEstilosPorTipo.put(TipoToken.CADENA, crearEstilo(colorCadena));
+        mapaEstilosPorTipo.put(TipoToken.OPERADOR, crearEstilo(colorOperador));
+        mapaEstilosPorTipo.put(TipoToken.AGRUPACION, crearEstilo(colorAgrupacion));
+        mapaEstilosPorTipo.put(TipoToken.PUNTUACION, crearEstilo(colorPuntuacion));
+        mapaEstilosPorTipo.put(TipoToken.COMENTARIO, crearEstilo(colorComentario)); 
+        mapaEstilosPorTipo.put(TipoToken.ERROR, crearEstilo(colorError));
+    }
+    
+    private AttributeSet crearEstilo(Color color)
+    {
+        SimpleAttributeSet estilo = new SimpleAttributeSet();
+        StyleConstants.setForeground(estilo, color != null ? color : Color.BLACK);
+        return estilo;
     }
 
     /**
