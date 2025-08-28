@@ -9,11 +9,9 @@ import com.mycompany.analizadorlexico.configuracion.ConfiguracionLexica;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class DialogoConfig extends javax.swing.JDialog 
 {
-    
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DialogoConfig.class.getName());
     private ConfiguracionLexica config;
     public DialogoConfig(java.awt.Frame parent, ConfiguracionLexica config) 
@@ -76,7 +74,8 @@ public class DialogoConfig extends javax.swing.JDialog
                 JOptionPane.showMessageDialog(this, "Error al guardar: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
         });
-        btnRestablecer.addActionListener(e -> {
+        btnRestablecer.addActionListener(e -> 
+        {
             // Restablece a valores por defecto
             if (!commitEdicionTabla()) return;
             int r = JOptionPane.showConfirmDialog(this, "¿Restablecer a valores por defecto?", "Confirmar", JOptionPane.YES_NO_OPTION);

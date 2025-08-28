@@ -4,29 +4,34 @@
  */
 package com.mycompany.analizadorlexico.ui;
 
-import java.awt.Color;
 import javax.swing.JOptionPane;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyleContext;
-import javax.swing.text.StyledDocument;
 
-/**
- *
- * @author mauricio
- */
-public class DialogoBusqueda extends javax.swing.JDialog {
+public class DialogoBusqueda extends javax.swing.JDialog 
+{
+    public interface BusquedaListener 
+    {
+        void onBuscar(String patron);
+    }
     
     private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(DialogoBusqueda.class.getName());
-    private final String textoFuente;
-    public DialogoBusqueda(java.awt.Frame parent, String textoFuente) 
+    private BusquedaListener busquedaListener;
+    
+    public DialogoBusqueda(java.awt.Frame parent, String textoPreseleccionado) 
     {
         super(parent, true);
         initComponents();
-        this.textoFuente = textoFuente != null ? textoFuente : "";
-        txtResultado.setText(this.textoFuente);
+        setLocationRelativeTo(parent);
+        if (textoPreseleccionado != null && !textoPreseleccionado.isBlank()) 
+        {
+            txtPalabra.setText(textoPreseleccionado);
+            txtPalabra.selectAll();
+        }
         configurarHandlers();
-        
+    }
+    
+    public void setBusquedaListener(BusquedaListener listener) 
+    {
+        this.busquedaListener = listener;
     }
     
     private void configurarHandlers() 
@@ -39,36 +44,21 @@ public class DialogoBusqueda extends javax.swing.JDialog {
     {
         try 
         {
-            txtResultado.setText(textoFuente); // restaura texto plano
             String palabra = txtPalabra.getText();
-            if (palabra == null || palabra.isEmpty()) return;
-
-            StyledDocument doc = txtResultado.getStyledDocument();
-            StyleContext sc = new StyleContext();
-            Style estilo = sc.addStyle("resaltado", null);
-            StyleConstants.setBackground(estilo, Color.YELLOW);
-
-            char[] texto = textoFuente.toCharArray();
-            char[] patron = palabra.toCharArray();
-            int n = texto.length, m = patron.length;
-
-            for (int i = 0; i <= n - m; i++) 
+            if (palabra == null || palabra.isBlank()) 
             {
-                boolean ok = true;
-                for (int j = 0; j < m; j++) 
-                {
-                    if (texto[i + j] != patron[j]) 
-                    { 
-                        ok = false; 
-                        break; 
-                    }
-                }
-                if (ok) doc.setCharacterAttributes(i, m, estilo, false);
+                JOptionPane.showMessageDialog(this, "Ingrese un patron para buscar.");
+                return;
             }
+            if (busquedaListener != null) 
+            {
+                busquedaListener.onBuscar(palabra);
+            }
+            dispose();
         } 
         catch (Exception ex) 
         {
-            JOptionPane.showMessageDialog(this, "Error en búsqueda: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error en la busqueda: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -85,16 +75,14 @@ public class DialogoBusqueda extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         txtPalabra = new javax.swing.JTextField();
         btnBuscar = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        txtResultado = new javax.swing.JTextPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Busqueda de Patrones");
-        setPreferredSize(new java.awt.Dimension(485, 340));
 
+        jPanel1.setPreferredSize(new java.awt.Dimension(525, 84));
         jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        jLabel1.setText("Palabra exacta: ");
+        jLabel1.setText("Cadena a buscar:");
         jPanel1.add(jLabel1);
 
         txtPalabra.setColumns(20);
@@ -105,11 +93,6 @@ public class DialogoBusqueda extends javax.swing.JDialog {
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.PAGE_START);
 
-        txtResultado.setEditable(false);
-        jScrollPane1.setViewportView(txtResultado);
-
-        getContentPane().add(jScrollPane1, java.awt.BorderLayout.CENTER);
-
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -117,8 +100,6 @@ public class DialogoBusqueda extends javax.swing.JDialog {
     private javax.swing.JButton btnBuscar;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField txtPalabra;
-    private javax.swing.JTextPane txtResultado;
     // End of variables declaration//GEN-END:variables
 }

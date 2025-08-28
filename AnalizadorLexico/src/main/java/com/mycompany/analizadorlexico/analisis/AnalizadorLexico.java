@@ -14,7 +14,6 @@ public class AnalizadorLexico
         ResultadoAnalisis resultado = new ResultadoAnalisis();
         if (textoFuente == null) textoFuente = "";
         char[] arregloCaracteres = textoFuente.toCharArray();
-    
         int indiceActual = 0;
         int filaActual = 1;
         int columnaActual = 1;
@@ -226,7 +225,6 @@ public class AnalizadorLexico
             {
                 int indiceInicio = indiceActual;
                 int columnaInicio = columnaActual;
-
                 while (indiceActual < arregloCaracteres.length) 
                 {
                     char caracterIdentificador = arregloCaracteres[indiceActual];
@@ -240,7 +238,6 @@ public class AnalizadorLexico
                         break;
                     }
                 }
-
                 String lexema = extraer(arregloCaracteres, indiceInicio, indiceActual);
                 boolean esReservada = estaEnLista(lexema, configuracion.getPalabrasReservadas());
                 TipoToken tipo = esReservada ? TipoToken.RESERVADA : TipoToken.IDENTIFICADOR;
