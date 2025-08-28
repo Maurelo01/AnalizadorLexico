@@ -4,26 +4,19 @@
  */
 package com.mycompany.analizadorlexico.ui;
 
-import com.mycompany.analizadorlexico.analisis.AnalizadorLexico;
-import com.mycompany.analizadorlexico.analisis.ResultadoAnalisis;
-import com.mycompany.analizadorlexico.analisis.TipoToken;
-import com.mycompany.analizadorlexico.analisis.Token;
+import com.mycompany.analizadorlexico.analisis.*;
 import com.mycompany.analizadorlexico.configuracion.ConfiguracionES;
 import com.mycompany.analizadorlexico.configuracion.ConfiguracionLexica;
 import com.mycompany.analizadorlexico.io.Archivos;
 import com.mycompany.analizadorlexico.util.Colores;
 import java.awt.Color;
 import java.awt.Font;
-import java.util.EnumMap;
-import java.util.Map;
+import java.util.*;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.text.AttributeSet;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
+import javax.swing.text.*;
 
 public class EditorPrincipal extends javax.swing.JFrame 
 {
@@ -34,10 +27,15 @@ public class EditorPrincipal extends javax.swing.JFrame
     private SimpleAttributeSet estiloPorDefecto;
     private Map<TipoToken, AttributeSet> mapaEstilosPorTipo;
     private boolean coloreadoActivo = true;
-    private Timer temporizadorColoreado;         
+    private Timer temporizadorColoreado;     
+    private static final Color COLOR_RESALTADO_BUSQUEDA = new Color(237, 255, 33);
+    private final Highlighter.HighlightPainter pintorResaltadoBusqueda;
+    private final List<Object> marcasResaltadoBusqueda;
     
     public EditorPrincipal() 
     {
+        this.pintorResaltadoBusqueda = new DefaultHighlighter.DefaultHighlightPainter(COLOR_RESALTADO_BUSQUEDA);
+        this.marcasResaltadoBusqueda = new ArrayList<>();
         initComponents();
         configurarVentana();
         cargarConfiguracionInicial();
@@ -113,10 +111,63 @@ public class EditorPrincipal extends javax.swing.JFrame
         }
     }
     
+    private void limpiarResaltadoBusqueda() 
+    {
+        Highlighter highlighter = areaEditor.getHighlighter();
+        for (Object marca : marcasResaltadoBusqueda) 
+        {
+            highlighter.removeHighlight(marca);
+        }
+        marcasResaltadoBusqueda.clear();
+    }
+    
+    private void resaltarCoincidenciasEnEditor(String patron) 
+    {
+        limpiarResaltadoBusqueda();
+        if (patron == null || patron.isBlank()) return;
+        try 
+        {
+            String texto = areaEditor.getText();
+            Highlighter highlighter = areaEditor.getHighlighter();
+            int desde = 0;
+            boolean primera = true;
+            while (true) 
+            {
+                int inicio = texto.indexOf(patron, desde);
+                if (inicio < 0) break;
+                int fin = inicio + patron.length();
+                Object marca = highlighter.addHighlight(inicio, fin, pintorResaltadoBusqueda);
+                marcasResaltadoBusqueda.add(marca);
+                if (primera) 
+                {
+                    areaEditor.setCaretPosition(inicio);
+                    areaEditor.requestFocusInWindow();
+                    primera = false;
+                }
+                desde = fin; // continua despues de las coincidencias
+            }
+            if (marcasResaltadoBusqueda.isEmpty())
+            {
+                javax.swing.JOptionPane.showMessageDialog(this, "No se encontraron coincidencias.");
+            }
+        } 
+        catch (Exception ex) 
+        {
+            javax.swing.JOptionPane.showMessageDialog(this, "No se pudo resaltar: " + ex.getMessage(),
+                    "Busqueda", javax.swing.JOptionPane.WARNING_MESSAGE);
+        }
+}
+    
     private void abrirDialogoBusqueda() 
     {
-        new DialogoBusqueda(this, areaEditor.getText()).setVisible(true);
-    
+        String seleccionado = areaEditor.getSelectedText();
+        DialogoBusqueda dialogo = new DialogoBusqueda(this, seleccionado);
+        dialogo.setBusquedaListener(patron -> 
+        {
+            resaltarCoincidenciasEnEditor(patron);
+        });
+        dialogo.setLocationRelativeTo(this);
+        dialogo.setVisible(true);
     }
     
     private void abrirDialogoConfig() 
@@ -288,7 +339,47 @@ public class EditorPrincipal extends javax.swing.JFrame
         } 
         catch (Exception ex){}
     }
-
+    
+    private void resaltarCoincidenciasEnEditor(String patron, boolean esExpresionRegular, boolean ignorarMayusculas) 
+    {
+        limpiarResaltadoBusqueda();
+        if (patron == null || patron.isBlank()) 
+        {
+            javax.swing.JOptionPane.showMessageDialog(this, "Ingrese un patron para buscar.");
+            return;
+        }
+        try 
+        {
+            String texto = areaEditor.getText();
+            int flags = ignorarMayusculas ? java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE : 0;
+            java.util.regex.Pattern pattern = esExpresionRegular ? java.util.regex.Pattern.compile(patron, flags) : java.util.regex.Pattern.compile(java.util.regex.Pattern.quote(patron), flags);
+            java.util.regex.Matcher matcher = pattern.matcher(texto);
+            javax.swing.text.Highlighter highlighter = areaEditor.getHighlighter();
+            boolean primera = true;
+            while (matcher.find()) 
+            {
+                int inicio = matcher.start();
+                int fin = matcher.end();
+                Object marca = highlighter.addHighlight(inicio, fin, pintorResaltadoBusqueda);
+                marcasResaltadoBusqueda.add(marca);
+                if (primera) 
+                {
+                    areaEditor.setCaretPosition(inicio);
+                    areaEditor.requestFocusInWindow();
+                    primera = false;
+                }
+            }
+            if (marcasResaltadoBusqueda.isEmpty()) 
+            {
+                javax.swing.JOptionPane.showMessageDialog(this, "No se encontraron coincidencias.");
+            }
+        } 
+        catch (Exception ex) 
+        {
+            javax.swing.JOptionPane.showMessageDialog(this, "Patrón inválido: " + ex.getMessage(), "Búsqueda", javax.swing.JOptionPane.WARNING_MESSAGE);
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -395,13 +486,16 @@ public class EditorPrincipal extends javax.swing.JFrame
         {
             if (configuracion == null) // Asegura que la configuración este cargada
             {
-                com.mycompany.analizadorlexico.configuracion.ConfiguracionES.asegurarArchivoConfiguracion();
-                configuracion = com.mycompany.analizadorlexico.configuracion.ConfiguracionES.cargar();
+                ConfiguracionES.asegurarArchivoConfiguracion();
+                configuracion = ConfiguracionES.cargar();
             }
-            com.mycompany.analizadorlexico.analisis.AnalizadorLexico analizador =new com.mycompany.analizadorlexico.analisis.AnalizadorLexico(); // Ejecuta el analizador léxico
-            com.mycompany.analizadorlexico.analisis.ResultadoAnalisis resultado = analizador.analizar(areaEditor.getText(), configuracion);
-            com.mycompany.analizadorlexico.ui.DialogoResultadoAnalisis dialogo = new com.mycompany.analizadorlexico.ui.DialogoResultadoAnalisis(this, true);
-            dialogo.cargarResultadoAnalisis(resultado); dialogo.setLocationRelativeTo(this); dialogo.setVisible(true);
+            AnalizadorLexico analizador = new AnalizadorLexico(); // Ejecuta el analizador léxico
+            ResultadoAnalisis resultado = analizador.analizar(areaEditor.getText(), configuracion);
+            DialogoResultadoAnalisis dialogo = new DialogoResultadoAnalisis(this, true);
+            dialogo.cargarResultadoAnalisis(resultado); 
+            dialogo.cargarReportes(resultado, configuracion);
+            dialogo.setLocationRelativeTo(this); 
+            dialogo.setVisible(true);
         } 
         catch (Exception excepcion) 
         {

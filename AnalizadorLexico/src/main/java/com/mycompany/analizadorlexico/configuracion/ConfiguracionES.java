@@ -34,7 +34,7 @@ public class ConfiguracionES
         "CADENA": "#FFA800",
         "OPERADOR": "#FFDE21",
         "AGRUPACION": "#6E3D6F",
-        "PUNTUACION": "#DC143C",
+        "PUNTUACION": "#ffc1d3",
         "COMENTARIO": "#006400",
         "ERROR": "#FF0000"
       }

@@ -12,7 +12,8 @@ public class AnalizadorLexico
     
     public static void main(String[] args) 
     {
-        Thread.setDefaultUncaughtExceptionHandler((hilo, ex) -> {
+        Thread.setDefaultUncaughtExceptionHandler((hilo, ex) -> 
+        {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(null, "Error no controlado: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE
             );
@@ -34,7 +35,8 @@ public class AnalizadorLexico
         }
 
         // Lanza la UI en el hilo de eventos de Swing
-        SwingUtilities.invokeLater(() -> {
+        SwingUtilities.invokeLater(() -> 
+        {
             EditorPrincipal ventana = new EditorPrincipal();
             ventana.setVisible(true);
         });
